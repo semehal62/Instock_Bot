@@ -31,7 +31,7 @@ def init_db():
                 price REAL
             )
 
-    """
+    """)
 
     cursor.execute(
         """
@@ -55,6 +55,7 @@ def db_get_inventory():
     cursor = conn.cursor()
     cursor.execute("SELECT product_name, quantity,price FROM inventory")
     items = cursor.fetchall()
+
     conn.close()
     return items
 
@@ -70,9 +71,9 @@ def db_add_stock(name, qty, prices):
             quantity = quantity + execluded.quantity,
             price = exluded.price
         """,(name,qty,prices))
-        conn.commit()
-        conn.close()
-    )
+    conn.commit()
+    conn.close()
+    
 def db_log_sale(product_name,qty_sold,employee):
     conn = sqlite3.connect("store.db")
     cursor = conn.cursor()
@@ -84,15 +85,38 @@ def db_log_sale(product_name,qty_sold,employee):
         return False, "Not enough stock or product does not exist!"
     
     current_qty,unit_price = row 
-    total_prices = unit_prices * qty_sold
+    total_price = unit_price * qty_sold
     new_qty = current_qty - qty_sold
 
     cursor.execute("UPDATE inventory SET quantity = ?  WHERE product_name = ?", (new_qty,product_name))
+    
     date_str = datetime().now().strftime("%Y-%m-%d")
     cursor.execute(
         """
         INSERT INTO sale (product_name, quantity_sold, total_price, employee_name, sale_date)
         VALUE(?, ?, ?, ?, ?)
-        """,()
+        """,(product_name, qty_sold, total_price, employee, date_str)
 
+    conn.commit()
+    conn.close()
+    return True,total_price
+    
     )
+
+async def start(update:Update, contect: ContextTypes.DEFAULT_TYPE)
+    user = update.effective_user.username
+    if user == OWNER_USERNAME:
+        keyboard = [['/add_stock', 'daily_review'], ['/view_inventory']]
+        reply_markup = ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
+        await update.message.reply.text(f"Hell0 Boss! Welcome back.",reply_markup = reply_markup)
+    else:
+        keyboard = [['/sell_product']]
+        reply_markup = ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
+        await update.message.reply_text(f"Hello {update.effective_user.first_name}! Use /sell_product to log a sale.", reply_markup = reply_markup)
+        
+async def start_add_stock(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if update._effective_user.username != OWNER_USERNAME:
+        await update.message.reply_text{"❌ Unauthorized! Only the Owner can manage stock."}
+        return ConversationHandler.END
+    await update.message.reply_text("What is the product name?")
+    return ADD_STOCK_NAME
