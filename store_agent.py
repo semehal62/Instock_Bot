@@ -103,6 +103,7 @@ def db_log_sale(product_name,qty_sold,employee):
     
     )
 
+
 async def start(update:Update, contect: ContextTypes.DEFAULT_TYPE)
     user = update.effective_user.username
     if user == OWNER_USERNAME:
@@ -120,3 +121,8 @@ async def start_add_stock(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return ConversationHandler.END
     await update.message.reply_text("What is the product name?")
     return ADD_STOCK_NAME
+
+async def get_stock_name(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    context.user_data['stock_name'] = update.message.text.lower().strip()
+    await update.message.reply_text("How many units are you adding?")
+    return ADD_STOCK_QTY
